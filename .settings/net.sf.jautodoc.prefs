@@ -1,0 +1,21 @@
+add_header=true
+add_todo=false
+create_dummy_doc=false
+eclipse.preferences.version=1
+filter_fields=false
+filter_methods=false
+filter_types=false
+header_text=/*****************************************************************\r\n\r\n${project} -  A Java framework to develop HLA Federates.\r\nCopyright (c) ${year}, ${owner}, \r\nAll rights reserved.\r\n\r\nGNU Lesser General Public License (GNU LGPL).\r\n\r\nThis library is free software; you can redistribute it and/or\r\nmodify it under the terms of the GNU Lesser General Public\r\nLicense as published by the Free Software Foundation; either\r\nversion 3.0 of the License, or (at your option) any later version.\r\n\r\nThis library is distributed in the hope that it will be useful,\r\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\r\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\r\nLesser General Public License for more details.\r\n\r\nYou should have received a copy of the GNU Lesser General Public\r\nLicense along with this library. \r\nIf not, see ${lgpl_website}\r\n\r*****************************************************************/
+project_specific_settings=true
+properties=project,owner,year,lgpl_website,
+properties.lgpl_website=http\://http\://www.gnu.org/licenses/
+properties.owner=SMASH Lab - University of Calabria (Italy)
+properties.project=HLADevelopmentKit
+properties.year=2015
+replace_header=true
+replacements=<?xml version\="1.0" standalone\="yes"?>\n\n<replacements>\n<replacement key\="get" scope\="1" mode\="0">Gets the</replacement>\n<replacement key\="set" scope\="1" mode\="0">Sets the</replacement>\n<replacement key\="add" scope\="1" mode\="0">Adds the</replacement>\n<replacement key\="edit" scope\="1" mode\="0">Edits the</replacement>\n<replacement key\="remove" scope\="1" mode\="0">Removes the</replacement>\n<replacement key\="init" scope\="1" mode\="0">Inits the</replacement>\n<replacement key\="parse" scope\="1" mode\="0">Parses the</replacement>\n<replacement key\="create" scope\="1" mode\="0">Creates the</replacement>\n<replacement key\="build" scope\="1" mode\="0">Builds the</replacement>\n<replacement key\="is" scope\="1" mode\="0">Checks if is</replacement>\n<replacement key\="print" scope\="1" mode\="0">Prints the</replacement>\n<replacement key\="has" scope\="1" mode\="0">Checks for</replacement>\n</replacements>\n\n
+single_line_comment=false
+visibility_package=false
+visibility_private=false
+visibility_protected=false
+visibility_public=false
