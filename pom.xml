@@ -133,7 +133,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- Maven Assembly Plugin -->
+			<!-- Maven Assembly Plugin, Make this jar executable -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
