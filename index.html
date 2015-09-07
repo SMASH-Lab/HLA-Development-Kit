@@ -20,7 +20,7 @@
     <header>
       <div class="inner">
 	      <img src="images/logo_dimes.png" alt="logo_dimes"/ align="left" style="width: 300px; margin-bottom: 20px">
-        <h1 align="center">SMASH-LAB</h1>
+        <h1 align="center">SMASH-Lab</h1>
         <h2 style="margin-left: 70px">System Modeling And Simulation Hub - Laboratory</h2>
         <a href="https://github.com/SMASH-Lab/HLA-Development-Kit" class="button" style="margin-top: 130px"><small>View project on</small> GitHub</a>
       </div>
@@ -36,7 +36,7 @@
 		  </h3>
 
 <p align="justify">
-The development of a HLA Federation with its Federates is a quite complex task and there are few training resources for developers. The HLA Development Kit aims at easing the development of HLA Federates by providing the following resources: (i) a <em>software framework (the DKF)</em> for the development in Java of HLA Federates; (ii) a <em>technical documentation</em> that describes the DKF; (iii) a <em>user guide</em> to support developers in the use of the DKF; (iv) a set of <em>reference examples</em> of HLA Federates created by using the DKF; and, (v) <em>video-tutorials</em>, which show how to create both the structure and the behavior of a HLA Federate by using the DKF.
+The development of a HLA Federation with its Federates is a quite complex task and there are few training resources for developers [1, 4]. The HLA Development Kit aims at easing the development of HLA Federates by providing the following resources: (i) a <em>software framework (the DKF)</em> for the development in Java of HLA Federates; (ii) a <em>technical documentation</em> that describes the DKF; (iii) a <em>user guide</em> to support developers in the use of the DKF; (iv) a set of <em>reference examples</em> of HLA Federates created by using the DKF; and, (v) <em>video-tutorials</em>, which show how to create both the structure and the behavior of a HLA Federate by using the DKF.
 </p>
 
 <h3>
@@ -45,7 +45,7 @@ The development of a HLA Federation with its Federates is a quite complex task a
 </h3>
 
 <p align="justify">
-The DKF is a general-purpose, domain-independent framework, released under the open source policy Lesser GNU Public License (LGPL), which facilitates the development of HLA Federates. Indeed, the DKF allows developers to focus on the specific aspects of their own Federates rather than dealing with the common HLA functionalities, such as: the management of the simulation time; the connection/disconnection on/from the HLA RTI; the publishing, subscribing, and updating of ObjectClass and InteractionClass elements. The DKF is designed and developed by the SMASH-Lab (System Modeling And Simulation Hub - Laboratory) of the University of Calabria (Italy) working in cooperation with the NASA JSC (Johnson Space Center), Houston (TX, USA).<br>
+The DKF is a general-purpose, domain-independent framework, released under the open source policy Lesser GNU Public License (LGPL), which facilitates the development of HLA Federates. Indeed, the DKF allows developers to focus on the specific aspects of their own Federates rather than dealing with the common HLA functionalities, such as: the management of the simulation time; the connection/disconnection on/from the HLA RTI; the publishing, subscribing, and updating of <em>ObjectClass</em> and <em>InteractionClass</em> elements [2, 3]. The DKF is designed and developed by the SMASH-Lab (System Modeling And Simulation Hub - Laboratory) of the University of Calabria (Italy) working in cooperation with the NASA JSC (Johnson Space Center), Houston (TX, USA).<br>
 The DKF is fully implemented in the Java language and is based on the following three principles: (i) <em>Interoperability</em>, DKF is fully compliant with the IEEE 1516-2010 specifications; as a consequence, it is platform-independent and can interoperate with different HLA RTI implementations (e.g. PITCH, VT/MÄK, PoRTIco, CERTI); (ii) <em>Portability and Uniformity</em>, DKF provides a homogeneous set of APIs that are independent from the underlying HLA RTI and Java version. In this way, developers could decide the HLA RTI and the Java run-time environment at development-time; and (iii) <em>Usability</em>, the complexity of the features provided by the DKF framework are hidden behind an intuitive set of APIs.
 </p>
 
@@ -57,8 +57,9 @@ The DKF is fully implemented in the Java language and is based on the following 
 
 <p>
 	<ul>
-		<li>Compiled versione of the DKF <a href="https://drive.google.com/open?id=0B6Txsul1iIJmVFdTX0Roc2tGeFk">link</a>;</li>
-		<li>Documentation <a href="docs/index.html">link</a>;</li>
+		<li>Compiled version of the DKF <a href="https://drive.google.com/open?id=0B6Txsul1iIJmVFdTX0Roc2tGeFk">link</a>;</li>
+		<li>Documentation (API) <a href="docs/index.html">link</a>;</li>
+		<li>Technical document <a href="https://drive.google.com/open?id=0B6Txsul1iIJmQWotaXVuODdYWDg">link</a>;</li>
 		<li>Examples and video tutorials <a href="https://drive.google.com/open?id=0B6Txsul1iIJma3pITXE1M2hSOVk">link</a>.</li>
 	</ul>
 </p>
@@ -75,6 +76,21 @@ The DKF is fully implemented in the Java language and is based on the following 
 		<li>Main developer: Alberto Falcone (University of Calabria, Italy), <a href="mailto:alberto.falcone@dimes.unical.it">alberto.falcone@dimes.unical.it</a>;</li>
 		<li>Developer: Andrea Tundis (University of Calabria, Italy), <a href="mailto:andrea.tundis@dimes.unical.it">andrea.tundis@dimes.unical.it</a>;</li>
 	</ul>
+</p>
+
+<h3>
+	<a id="authors-and-contributors" class="anchor" href="#references" aria-hidden="true">
+		<span class="octicon octicon-link"></span></a>
+		References
+</h3>
+
+<p>
+	<ol>
+		<li>Anagnostou, A., Chaudhry, .R., Falcone, A., Garro, A., Salah, O., Taylor, S.J.E., <em>A Prototype HLA Development Kit: Results from the 2015 Simulation 				Exploration Experience</em>. In Proc. of the ACM/SIGSIM PADS 2015, London, UK, June, 10–12, (2015).</li>
+		<li>Anagnostou, A, Chaudhry, N.R., Falcone, A., Garro, A., Salah, O., Taylor, S.J.E., <em>Easing the development of HLA Federates: the HLA Development Kit and its exploitation in the SEE Project</em>. In Proc. of the 19th IEEE/ACM International Symposium on Distributed Simulation and Real Time Applications (ACM/IEEE DS-RT), IEEE Computer Society, (2015).</li>
+		<li>Bocciarelli, P., D’Ambrogio, A., Falcone, A., Garro, A., Giglio, A., <em>A model driven approach to enable the distributed simulation of complex systems.</em> In Proc. of the 6th Complex Systems Design & Management (CSD&M) 2015, Paris, FR, November, 23-25, (2015).</li>
+		<li>Falcone, A., Garro A., Longo F., Spadafora F., <em>SimulationExploration Experience: A Communication System and a 3D Real Time Visualization for a Moon base simulated scenario</em>. In Proc. of the 18th IEEE/ACM International Symposium on Distributed Simulation and Real Time Applications (ACM/IEEE DS-RT), pp.113–120, IEEE Computer Society, (2014).</li>
+	</ol>
 </p>
 
 <h3>
