@@ -12,8 +12,8 @@ The HLA Development Kit is designed, developed, released and managed by the SEI 
 * Official website [link](https://smash-lab.github.io/HLA-Development-Kit/);
 * DKF all-in-one package [link](https://drive.google.com/open?id=0B6Txsul1iIJmVFdTX0Roc2tGeFk);
 * Documentation (API) [link](https://smash-lab.github.io/HLA-Development-Kit/docs/index.html);
-* Technical documentations [link](https://drive.google.com/open?id=0B6Txsul1iIJmQWotaXVuODdYWDg);
-* Examples and video-tutorials: How to build a Federate from scratch in 30 minutes! [link](https://drive.google.com/folderview?id=0B6Txsul1iIJmflNPQmxudDV1eVZ3NXNKbGVmNEcwODU2TkpYOElxY2lzYV9USVJIbjJsRTg&usp=sharing)
+* Technical documentations [link](https://smash-lab.github.io/HLA-Development-Kit/document/HLA_Development_Kit_ver_0.0.1.pdf);
+* Examples and video-tutorials: How to build a Federate from scratch in 30 minutes! [link](https://drive.google.com/open?id=0B6Txsul1iIJma3pITXE1M2hSOVk)
 
 ## **Working team**
 
