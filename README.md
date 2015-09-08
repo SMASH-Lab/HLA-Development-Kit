@@ -21,6 +21,10 @@ The HLA Development Kit is designed, developed, released and managed by the SEI 
 *  Alberto Falcone, [alberto.falcone@dimes.unical.it](mailto:alberto.falcone@dimes.unical.it) (main developer); 
 *  Andrea Tundis, [andrea.tundis@dimes.unical.it](mailto:andrea.tundis@dimes.unical.it) (developer).
 
+## **Acknowledgments**
+
+The DKF working team would like to thank Edwin Z. Crues (NASA JCS) for his precious advice and suggestions in the development of the HLA Development Kit. A special note of thanks goes also to all the NASA staff involved in the Simulation Exploration Experience (SEE) Project: Priscilla Elfrey, Stephen Paglialonga, Michael Conroy, Dan Dexter, Daniel Oneil, to Björn Möller (PITCH Technologies), and to all the members of SEE teams.
+
 <br>
  
 ##**References**
