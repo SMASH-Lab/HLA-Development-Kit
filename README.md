@@ -13,7 +13,8 @@ The HLA Development Kit is designed, developed, released and managed by the SEI 
 * DKF all-in-one package [link](https://drive.google.com/open?id=0B6Txsul1iIJmVFdTX0Roc2tGeFk);
 * Documentation (API) [link](https://smash-lab.github.io/HLA-Development-Kit/docs/index.html);
 * Technical documentations [link](https://smash-lab.github.io/HLA-Development-Kit/document/HLA_Development_Kit_ver_0.0.1.pdf);
-* Examples and video-tutorials: How to build a Federate from scratch in 30 minutes! [link](https://drive.google.com/open?id=0B6Txsul1iIJma3pITXE1M2hSOVk)
+* Examples and video-tutorials: How to build a Federate from scratch in 30 minutes! [link](https://drive.google.com/open?id=0B6Txsul1iIJma3pITXE1M2hSOVk);
+* The [SEE](http://exploresim.com/) HLA Starter Kit: The space-specific extension of the DKF [link](https://code.google.com/p/see-hla-starterkit/).
 
 ## **Working team**
 
