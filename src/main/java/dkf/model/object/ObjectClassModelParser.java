@@ -40,6 +40,7 @@ import dkf.model.object.annotations.Attribute;
 import dkf.model.object.annotations.ObjectClass;
 import dkf.model.parser.AbstractObjectModelParser;
 
+
 @SuppressWarnings("rawtypes")
 public class ObjectClassModelParser extends AbstractObjectModelParser {
 	

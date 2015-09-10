@@ -9,6 +9,7 @@
 	<properties>
 		<jdk.version>1.7</jdk.version>
 		<targerDir>${basedir}/target</targerDir>
+		<jar.name>dkf</jar.name>
 	</properties>
 
 	<repositories>
@@ -145,7 +146,7 @@
 					</descriptorRefs>
 
 					<!-- jar name -->
-					<finalName>${project.name}-${project.version}</finalName>
+					<finalName>${jar.name}-${project.version}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 
 					<!-- MainClass in mainfest make a executable jar -->
