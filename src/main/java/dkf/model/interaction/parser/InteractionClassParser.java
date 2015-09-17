@@ -20,7 +20,7 @@ License along with this library.
 If not, see http://http://www.gnu.org/licenses/
 *****************************************************************/
 
-package dkf.model.interaction;
+package dkf.model.interaction.parser;
 
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.ParameterHandleValueMap;
@@ -39,25 +39,24 @@ import org.apache.logging.log4j.Logger;
 import dkf.coder.Coder;
 import dkf.model.interaction.annotations.InteractionClass;
 import dkf.model.interaction.annotations.Parameter;
-import dkf.model.parser.AbstractObjectModelParser;
 
 
+@SuppressWarnings("rawtypes")
+public class InteractionClassParser extends AbstractInteractionParser {
 
-public class InteractionClassModelParser extends AbstractObjectModelParser {
+	private static final Logger logger = LogManager.getLogger(InteractionClassParser.class);
 
-	private static final Logger logger = LogManager.getLogger(InteractionClassModelParser.class);
+	private Class<? extends InteractionClass> interactionClassModel = null;
+	private Field[] fields = null;
 
-	protected Class<? extends InteractionClass> interactionClassModel = null;
-
-
-	public InteractionClassModelParser(Class<? extends InteractionClass> interactionClassModel) {
+	public InteractionClassParser(Class<? extends InteractionClass> interactionClassModel) {
 		super();
 		this.interactionClassModel = interactionClassModel;
-		retrieveClassModelStructure();
+		retrieveStructure();
 	}
-
-	@SuppressWarnings({ "rawtypes" })
-	protected void retrieveClassModelStructure() {
+	
+	@Override
+	public void retrieveStructure() {
 
 		this.classHandleName = interactionClassModel.getAnnotation(InteractionClass.class).name();
 		fields = interactionClassModel.getDeclaredFields();
@@ -77,7 +76,7 @@ public class InteractionClassModelParser extends AbstractObjectModelParser {
 				}
 			}
 		} catch (InstantiationException | IllegalAccessException e) {
-			logger.error("Error in retreving the annotations of the fields");
+			logger.error("Error in retreving the annotations of the fields", e);
 			e.printStackTrace();
 		} finally {
 			tmpMapCoder = null;
@@ -86,7 +85,15 @@ public class InteractionClassModelParser extends AbstractObjectModelParser {
 
 	}
 
+	private void matchingObjectCoderIsValid(Field f, Coder coderTmp) {
+		if(!coderTmp.getAllowedType().equals(f.getType())){
+			logger.error("The Coder: "+coderTmp.getAllowedType()+" is not valid for the Object: "+f.getType());
+			throw new RuntimeException("The Coder: "+coderTmp.getAllowedType()+" is not valid for the Object: "+f.getType());
+		}
+	}
+
 	@SuppressWarnings("unchecked")
+	@Override
 	public Map<String, byte[]> encode(Object interaction) {
 
 		if(interaction == null){
@@ -124,6 +131,7 @@ public class InteractionClassModelParser extends AbstractObjectModelParser {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public void decode(Object interaction, Map<String, ParameterHandle> mapFieldNameParameterHandle, ParameterHandleValueMap arg1) {
 
 		if(interaction == null || arg1 == null || mapFieldNameParameterHandle == null){
@@ -147,4 +155,5 @@ public class InteractionClassModelParser extends AbstractObjectModelParser {
 			e.printStackTrace();
 		}
 	}
+
 }

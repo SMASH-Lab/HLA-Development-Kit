@@ -18,8 +18,8 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library. 
 If not, see http://http://www.gnu.org/licenses/
-*****************************************************************/
-package dkf.model.object;
+ *****************************************************************/
+package dkf.model.object.parser;
 
 import hla.rti1516e.AttributeHandle;
 import hla.rti1516e.AttributeHandleValueMap;
@@ -38,30 +38,31 @@ import org.apache.logging.log4j.Logger;
 import dkf.coder.Coder;
 import dkf.model.object.annotations.Attribute;
 import dkf.model.object.annotations.ObjectClass;
-import dkf.model.parser.AbstractObjectModelParser;
 
 
 @SuppressWarnings("rawtypes")
-public class ObjectClassModelParser extends AbstractObjectModelParser {
-	
-	private static final Logger logger = LogManager.getLogger(ObjectClassModelParser.class);
-	
-	protected Class<? extends ObjectClass> objectClassModel = null;
-	
-	public ObjectClassModelParser(Class<? extends ObjectClass> objectClassModel) {
+public class ObjectClassParser extends AbstractObjectClassParser {
+
+	private static final Logger logger = LogManager.getLogger(ObjectClassParser.class);
+
+	private Class<? extends ObjectClass> objectClassModel = null;
+	private Field[] fields = null;
+
+	public ObjectClassParser(Class<? extends ObjectClass> objectClassModel) {
 		super();
 		this.objectClassModel = objectClassModel;
-		retrieveClassModelStructure();
+		retrieveStructure();
 	}
 
-	protected void retrieveClassModelStructure() {
+	@Override
+	public void retrieveStructure() {
 
 		this.classHandleName = objectClassModel.getAnnotation(ObjectClass.class).name();
+		fields  = objectClassModel.getDeclaredFields();
 
-		fields = objectClassModel.getDeclaredFields();
 		Map<Class, Coder> tmpMapCoder = new HashMap<Class, Coder>();
 		Coder coderTmp = null;
-		
+
 		try {
 			for(Field f : fields){
 				if(f.isAnnotationPresent(Attribute.class)){
@@ -69,7 +70,7 @@ public class ObjectClassModelParser extends AbstractObjectModelParser {
 					if(coderTmp == null){
 						coderTmp = f.getAnnotation(Attribute.class).coder().newInstance();
 						tmpMapCoder.put(f.getAnnotation(Attribute.class).coder(), coderTmp);
-						}
+					}
 					matchingObjectCoderIsValid(f, coderTmp);
 					mapFieldCoder.put(f.getAnnotation(Attribute.class).name(), coderTmp);
 				}
@@ -84,20 +85,28 @@ public class ObjectClassModelParser extends AbstractObjectModelParser {
 
 	}
 
+	private void matchingObjectCoderIsValid(Field f, Coder coderTmp) {
+		if(!coderTmp.getAllowedType().equals(f.getType())){
+			logger.error("The Coder: "+coderTmp.getAllowedType()+" is not valid for the Object: "+f.getType());
+			throw new RuntimeException("The Coder: "+coderTmp.getAllowedType()+" is not valid for the Object: "+f.getType());
+		}
+	}
+
 	@SuppressWarnings("unchecked")
+	@Override
 	public Map<String, byte[]> encode(Object element) {
-		
+
 		if(element == null){
 			logger.error("The argument is null");
 			throw new IllegalArgumentException("The argument is null");
 		}
-		
+
 		logger.debug("Encoding: "+element.toString());
-		
+
 		PropertyDescriptor pd = null;
 		Object fieldValue = null;
 		Coder fieldCoder = null;
-		
+
 		try {
 			for(Field f : fields)
 				if(f.isAnnotationPresent(Attribute.class)){
@@ -117,18 +126,18 @@ public class ObjectClassModelParser extends AbstractObjectModelParser {
 			logger.error("Error in retreving the value of the fields");
 			e.printStackTrace();
 		}
-
 		return encoderMap;
 	}
-
+	
 	@SuppressWarnings("unchecked")
+	@Override
 	public void decode(Object element, Map<String, AttributeHandle> mapFieldNameAttributeHandle, AttributeHandleValueMap arg1) {
 
 		if(element == null || arg1 == null || mapFieldNameAttributeHandle == null){
 			logger.error("Some arguments are null");
 			throw new IllegalArgumentException("Some arguments are null");
 		}
-		
+
 		PropertyDescriptor pd = null;
 		Coder<Object> fieldCoder = null;
 		byte[] currValue = null;
@@ -144,6 +153,6 @@ public class ObjectClassModelParser extends AbstractObjectModelParser {
 		} catch (IntrospectionException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | DecoderException e) {
 			e.printStackTrace();
 		}
-
 	}
+
 }

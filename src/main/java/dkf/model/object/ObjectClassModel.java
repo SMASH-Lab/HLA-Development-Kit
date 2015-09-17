@@ -48,11 +48,16 @@ import hla.rti1516e.exceptions.RTIinternalError;
 import hla.rti1516e.exceptions.RestoreInProgress;
 import hla.rti1516e.exceptions.SaveInProgress;
 
+import org.apache.commons.beanutils.LazyDynaClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dkf.core.DKFRTIAmbassador;
 import dkf.exception.UpdateException;
+import dkf.model.object.parser.AbstractObjectClassParser;
+import dkf.model.object.parser.DynaBeanObjectParser;
+import dkf.model.object.parser.ObjectClassParser;
+import dkf.utility.access.FOMDataInspector;
 
 @SuppressWarnings("rawtypes")
 public class ObjectClassModel {
@@ -69,18 +74,36 @@ public class ObjectClassModel {
 	private Map<Object, ObjectClassEntity> entityMap = null;
 	private Map<ObjectInstanceHandle, ObjectClassEntity> mapObjectInstanceHandleObjectClassEntity = null;
 	
-	private ObjectClassModelParser parser = null;
+	private AbstractObjectClassParser parser = null;
 
 	private AttributeHandleValueMap attribute_values = null;
 
+	private boolean isDynaClass;
+
 	@SuppressWarnings("unchecked")
 	public ObjectClassModel(Class objectClass) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidObjectClassHandle, InstantiationException, IllegalAccessException {
-		this.rti_ambassador = DKFRTIAmbassador.getInstance();
-		this.parser = new ObjectClassModelParser(objectClass);
 		
+		this.parser = new ObjectClassParser(objectClass);
+		this.isDynaClass = false;
+		createResources();
+	}
+
+	public ObjectClassModel(LazyDynaClass dynaClass, FOMDataInspector inspector) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidObjectClassHandle, InstantiationException, IllegalAccessException {
+		
+		this.parser = new DynaBeanObjectParser(dynaClass, inspector);
+		this.isDynaClass  = true;
+		createResources();
+	}
+	
+	private void createResources() throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidObjectClassHandle, InstantiationException, IllegalAccessException {
+		this.rti_ambassador = DKFRTIAmbassador.getInstance();
 		this.entityMap = new HashMap<Object, ObjectClassEntity>();
 		this.mapObjectInstanceHandleObjectClassEntity = new HashMap<ObjectInstanceHandle, ObjectClassEntity>();
 		initialize();
+	}
+	
+	public boolean isDynaClass() {
+		return this.isDynaClass;
 	}
 
 	private void initialize() throws NameNotFound, FederateNotExecutionMember, NotConnected, RTIinternalError, InvalidObjectClassHandle, 
@@ -94,7 +117,7 @@ public class ObjectClassModel {
 
 			// Get handles to all the attributes.
 			AttributeHandle tmp = null;
-			for(String str : parser.getMapFieldCoder().keySet()){
+			for(String str : parser.getFieldCoderMap().keySet()){
 				tmp = rti_ambassador.getAttributeHandle(objectClassHandle, str);
 				mapFieldNameAttributeHandle.put(str, tmp);
 			}
@@ -228,7 +251,7 @@ public class ObjectClassModel {
 			throw new IllegalStateException("Can't update the ' "+element+" ', because it is not subscribed !");
 		}
 	}
-
+	
 	private ObjectInstanceHandle reserveObjectInstanceName(ObjectClassEntity entity) throws IllegalName, SaveInProgress, RestoreInProgress, 
 	FederateNotExecutionMember, NotConnected, RTIinternalError, 
 	ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, 

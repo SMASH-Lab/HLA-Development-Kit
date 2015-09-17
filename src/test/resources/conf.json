@@ -2,12 +2,12 @@
   "asynchronousDelivery" : true,
   "crcHost" : "localhost",
   "crcPort" : 8989,
-  "federateName" : "Rover",
-  "federateType" : "Consumer",
+  "federateName" : "LunarRover",
+  "federateType" : "LunarRover",
   "federationName" : "SEE 2015",
   "fomDirectory" : "C:/Users/SEI01/Desktop/StarterKit project/out",
-  "realtime" : false,
-  "simulationEphoc" : "2013-04-10T20:00:00.000Z",
+  "realtime" : true,
+  "simulationEphoc" : "2015-04-12T20:00:00.000Z",
   "timeConstrained" : true,
-  "timeRegulating" : false
+  "timeRegulating" : true
 }

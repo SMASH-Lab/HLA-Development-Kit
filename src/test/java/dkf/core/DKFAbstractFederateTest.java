@@ -58,26 +58,24 @@ public class DKFAbstractFederateTest {
 		ConfigurationFactory factory = new ConfigurationFactory();
 		File confiuration = new File(getClass().getResource("/configuration.json").toURI());
 		Configuration conf = factory.importConfiguration(confiuration);
-		
+
 		DKFAbstractFederateAmbassador ambassador = new DKFAbstractFederateAmbassador() {
-			
+
 		};
-		
+
 		DKFAbstractFederate federate = new DKFAbstractFederate(ambassador) {
 
 			@Override
 			protected void doAction() {
-				// TODO Auto-generated method stub
-				
+				System.out.println("do");				
 			}
-			
+
 		};
-		
+
 		federate.configure(conf);
 		federate.connectToRTI("crcHost=" + conf.getCrcHost() + "\ncrcPort=" +conf.getCrcPort());
 		federate.joinFederationExecution();
-		federate.diconnectFromRTI();
-		
+		federate.diconnectFromRTI();		
 	}
 
 }

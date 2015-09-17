@@ -44,19 +44,19 @@ public @interface InteractionClass {
 	 * The transportation type of the InteractionClass defined in the FOM file
 	 * @return The transportation type of the InteractionClass
 	 */
-	public Transportation transportation() default Transportation.UNKNOWN;
+	public Transportation transportation() default Transportation.Unknown;
 	
 	/**
 	 * The Sharing type of the InteractionClass defined in the FOM file
 	 * @return The type of the Sharing
 	 */
-	public Sharing sharing() default Sharing.UNKNOWN;
+	public Sharing sharing() default Sharing.Unknown;
 	
 	/**
 	 * The Order type of the InteractionClass defined in the FOM file
 	 * @return The type of the Order
 	 */
-	public Order order() default Order.UNKNOWN;
+	public Order order() default Order.Unknown;
 	
 	/**
 	 * The semantic of the InteractionClass defined in the FOM file

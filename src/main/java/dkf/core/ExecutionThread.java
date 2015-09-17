@@ -41,11 +41,11 @@ public class ExecutionThread implements Runnable {
 	// Simulation time parameters.
 	private TimeInterface time = null;
 
-	protected ExecutionThread(DKFHLAModule hlamodule, TimeInterface time) {
+	protected ExecutionThread(DKFHLAModule hlamodule) {
 		this.hlamodule = hlamodule;
 		this.federate = hlamodule.getFederate();
 		this.fedamb = hlamodule.getAmbassador();
-		this.time = time;
+		this.time = hlamodule.getSimulationTimestamp();
 		this.runningThread = new Thread(this);
 		this.CONTINUE_EXECUTION = new AtomicBoolean(true);
 	}

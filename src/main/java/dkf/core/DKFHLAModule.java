@@ -18,22 +18,27 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library. 
 If not, see http://http://www.gnu.org/licenses/
-*****************************************************************/
+ *****************************************************************/
 package dkf.core;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Observer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom2.JDOMException;
 
 import dkf.config.Configuration;
 import dkf.exception.PublishException;
+import dkf.exception.TimeRepresentationException;
 import dkf.exception.UnsubscribeException;
 import dkf.exception.UpdateException;
+import dkf.model.interaction.annotations.InteractionClass;
+import dkf.model.object.annotations.ObjectClass;
+import dkf.time.TimeFactory;
 import dkf.time.TimeInterface;
-import dkf.utility.access.FOMDataInspectoryFactory;
-import dkf.utility.access.TimeType;
+import dkf.utility.access.FOMDataInspector;
 import hla.rti1516e.CallbackModel;
 import hla.rti1516e.RTIambassador;
 import hla.rti1516e.ResignAction;
@@ -92,7 +97,6 @@ import hla.rti1516e.exceptions.TimeRegulationIsNotEnabled;
 import hla.rti1516e.exceptions.UnsupportedCallbackModel;
 import hla.rti1516e.time.HLAinteger64Time;
 
-
 public class DKFHLAModule {
 
 	private static final Logger logger = LogManager.getLogger(DKFHLAModule.class);
@@ -100,6 +104,8 @@ public class DKFHLAModule {
 	private RTIambassador rtiamb = null;
 	private DKFAbstractFederate federate = null;
 	private DKFAbstractFederateAmbassador fedamb = null;
+
+	private FOMDataInspector inspector = null;
 
 	//Handle simulation time
 	private TimeQueryReturn startingGALT;
@@ -110,15 +116,10 @@ public class DKFHLAModule {
 		this.fedamb = fedamb;
 	}
 
-	protected void setTime(TimeInterface time) {
-		this.time = time;
-		this.fedamb.setTime(time);
-	}
-
 	protected void connect(String local_settings_designator) throws RTIinternalError, ConnectionFailed, 
-															 InvalidLocalSettingsDesignator, UnsupportedCallbackModel, CallNotAllowedFromWithinCallback {
+	InvalidLocalSettingsDesignator, UnsupportedCallbackModel, CallNotAllowedFromWithinCallback {
 
-		logger.info("Connecting to HLA/RTI.");
+		logger.info("Connecting to HLA/RTI infrastructure ...");
 		// Create the RTIambassador and Connect
 		this.rtiamb = DKFRTIAmbassador.getInstance();
 
@@ -126,20 +127,20 @@ public class DKFHLAModule {
 		try {
 			rtiamb.connect(this.fedamb, CallbackModel.HLA_IMMEDIATE, local_settings_designator);
 		} catch (AlreadyConnected e) {
-			//ignore
+			logger.info("The federate: "+federate+ "is already connected on the Federation execution");
 		}
 
 	}
 
 	protected void joinFederationExecution() throws InconsistentFDD, ErrorReadingFDD, CouldNotOpenFDD, NotConnected, 
-												RTIinternalError, CouldNotCreateLogicalTimeFactory, SaveInProgress, RestoreInProgress, CallNotAllowedFromWithinCallback, FederationExecutionDoesNotExist {
+	RTIinternalError, CouldNotCreateLogicalTimeFactory, SaveInProgress, RestoreInProgress, CallNotAllowedFromWithinCallback, FederationExecutionDoesNotExist {
 
 		Configuration config = federate.getConfig();
-		
+
 		logger.info("Loading FOMs modules...");
-		FOMDataInspectoryFactory fdi = new FOMDataInspectoryFactory(config.getFomDirectory());
-		URL foms[] = fdi.getFOMsURL();
-		
+		this.inspector = new FOMDataInspector(config.getFomDirectory());
+		URL foms[] = inspector.getFOMsURL();
+
 		//join the federate into the Federation execution
 		logger.info("Join the federate '"+config.getFederateName()+"' in the Federation execution '"+config.getFederationName()+"'");
 		try {
@@ -159,7 +160,7 @@ public class DKFHLAModule {
 				} 
 			}//while
 		} catch (FederateAlreadyExecutionMember ignored) {
-			//ignore
+			//ignored
 		}
 
 	}
@@ -177,7 +178,7 @@ public class DKFHLAModule {
 
 		// Make the local logical time object.
 		time.initializeLogicalTime();
-		
+
 		// Make the local logical time interval.
 		time.initializeLookaheadInterval();
 
@@ -284,17 +285,17 @@ public class DKFHLAModule {
 		// Clean up connectivity to Federation Execution.
 		rtiamb.resignFederationExecution(ResignAction.DELETE_OBJECTS_THEN_DIVEST);
 		logger.debug("Resign from the federation execution");
-		
+
 		//Try to destroy the federation execution
 		try {
 			rtiamb.destroyFederationExecution(federate.getConfig().getFederationName());
 			logger.error("Federatione execution '"+federate.getConfig().getFederationName()+"' has been destroyed");
 		} catch (FederationExecutionDoesNotExist e) {
-			logger.error("Federatione execution '"+federate.getConfig().getFederationName()+"' doesn't exist");
+			logger.error("Federatione execution '"+federate.getConfig().getFederationName()+"' doesn't exist", e);
 		} catch (FederatesCurrentlyJoined e) {
-			logger.debug("Didn't destroi the federatione execution '"+federate.getConfig().getFederationName()+"', federates still joined");
+			logger.debug("Didn't destroy the federatione execution '"+federate.getConfig().getFederationName()+"', federates still joined");
 		}
-		
+
 		// Disconnect from the RTI.
 		rtiamb.disconnect();
 		logger.info("The federate has been disconnected from the federation execution.");
@@ -319,8 +320,7 @@ public class DKFHLAModule {
 		try {
 			rtiamb.timeAdvanceRequest(time.nextTimeStep());
 		} catch (InvalidLogicalTimeInterval e) {
-			logger.error("Invalid LogicalTimeInterval.");
-			e.printStackTrace();
+			logger.error("Invalid LogicalTimeInterval.", e);
 		}
 
 	}
@@ -330,17 +330,17 @@ public class DKFHLAModule {
 		logger.info("Subscribed to the Subject");
 	}
 
-	public void unsubscribeFromSubject(Observer observer) {
+	public void unsubscribeSubject(Observer observer) {
 		fedamb.deleteObserverFromSubject(observer);
 		logger.info("Unsubscribed from the Subject");
 	}
 
 
 	public void publishElement(Object element, String name) throws NameNotFound, FederateNotExecutionMember, NotConnected, 
-															RTIinternalError, InvalidObjectClassHandle, PublishException, InstantiationException, 
-															IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, 
-															RestoreInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, 
-															ObjectClassNotPublished, AttributeNotOwned, ObjectInstanceNotKnown, UpdateException  {
+	RTIinternalError, InvalidObjectClassHandle, PublishException, InstantiationException, 
+	IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, 
+	RestoreInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, 
+	ObjectClassNotPublished, AttributeNotOwned, ObjectInstanceNotKnown, UpdateException  {
 
 		if(!fedamb.objectClassEntityIsAlreadyPublished(element)){
 			fedamb.publishObjectClassEntity(element, name);
@@ -366,8 +366,8 @@ public class DKFHLAModule {
 	}
 
 	public void updateElementObject(Object element) throws UpdateException, FederateNotExecutionMember, NotConnected, AttributeNotOwned, 
-															AttributeNotDefined, ObjectInstanceNotKnown, SaveInProgress, RestoreInProgress, RTIinternalError, 
-															IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, ObjectClassNotPublished, ObjectClassNotDefined {
+	AttributeNotDefined, ObjectInstanceNotKnown, SaveInProgress, RestoreInProgress, RTIinternalError, 
+	IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, ObjectClassNotPublished, ObjectClassNotDefined {
 
 		if(fedamb.objectClassEntityIsAlreadyPublished(element)){
 			fedamb.updateObjectClassEntityOnRTI(element);
@@ -380,26 +380,28 @@ public class DKFHLAModule {
 	}
 
 	public void updateInteraction(Object interaction) throws InteractionClassNotPublished, InteractionParameterNotDefined, InteractionClassNotDefined, 
-															SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, 
-															UpdateException {
+	SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, 
+	UpdateException {
 
 
 		if(fedamb.interactionClassEntityIsAlreadyPublished(interaction)){
 			fedamb.updateInteractionClassEntityOnRTI(interaction);
-			logger.info("The Interaction '"+interaction+"' has been updated on the HLA/RTI platform.");
+			logger.info("The Interaction '"+interaction.getClass()+"' has been updated on the HLA/RTI platform.");
 		}
 		else{
-			logger.warn("Interaction: "+interaction+", not published.");
+			logger.warn("Interaction: "+interaction.getClass()+", not published.");
 			throw new UpdateException("You can't update an unpublished interaction.");
 		}
 
 	}
-	
-	@SuppressWarnings("rawtypes")
-	public void subscribeElementObject(Class objectClass) throws InstantiationException, IllegalAccessException, NameNotFound, FederateNotExecutionMember, NotConnected, 
-															RTIinternalError, InvalidObjectClassHandle, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress {
 
-		if(!fedamb.objectClassModelIsAlreadySubscribed(objectClass)){
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void subscribeElementObject(Class objectClass) throws InstantiationException, IllegalAccessException, NameNotFound, FederateNotExecutionMember, NotConnected, 
+	RTIinternalError, InvalidObjectClassHandle, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress {
+
+		if(((Class<ObjectClass>)objectClass).getAnnotation(ObjectClass.class) != null &&
+				!fedamb.objectClassModelIsAlreadySubscribed(((Class<ObjectClass>)objectClass).getAnnotation(ObjectClass.class).name())){
+
 			fedamb.subscribeObjectClassModel(objectClass);
 			logger.info("The ObjectClass '"+objectClass+"' has been subscribed.");
 		}
@@ -407,58 +409,87 @@ public class DKFHLAModule {
 			logger.warn("The ObjectClass '"+objectClass+"' is already subscribed.");
 	}
 
-	@SuppressWarnings("rawtypes")
-	public void subscribeInteractionObject(Class interactionClass) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, 
-																		NotConnected, InvalidInteractionClassHandle, FederateServiceInvocationsAreBeingReportedViaMOM, 
-																		InteractionClassNotDefined, SaveInProgress, RestoreInProgress, InstantiationException, 
-																		IllegalAccessException  {
+	public void subscribeElementObject(String objectEndPoint) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidObjectClassHandle, InstantiationException, IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress {
 
-		if(!fedamb.interactionClassModelIsAlreadySubscribed(interactionClass)){
+		// Check if the ElementObject is already subscribed by the Federate
+		if(!fedamb.objectClassModelIsAlreadySubscribed(objectEndPoint)){
+			fedamb.subscribeObjectClassModel(objectEndPoint, inspector);
+			logger.info("The ObjectClass '"+objectEndPoint+"' has been subscribed.");
+		}
+		else
+			logger.warn("The ObjectClass '"+objectEndPoint+"' is already subscribed.");
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void subscribeInteractionObject(Class interactionClass) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, 
+	NotConnected, InvalidInteractionClassHandle, FederateServiceInvocationsAreBeingReportedViaMOM, 
+	InteractionClassNotDefined, SaveInProgress, RestoreInProgress, InstantiationException, 
+	IllegalAccessException  {
+
+		if(!fedamb.interactionClassModelIsAlreadySubscribed(((Class<InteractionClass>)interactionClass).getAnnotation(InteractionClass.class).name())){
 			fedamb.subscribeInteractionClassModel(interactionClass);
 			logger.info("The InteractionClass '"+interactionClass+"' has been subscribed.");
 		}
 		else
 			logger.warn("The InteractionClass '"+interactionClass+"' is already subscribed.");
 	}
-	
-	@SuppressWarnings("rawtypes")
-	public void unsubscribeObjectClass(Class objectClass) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, 
-															NotConnected, RTIinternalError, UnsubscribeException {
 
-		if(fedamb.objectClassModelIsAlreadySubscribed(objectClass)){
-			fedamb.unsubscribeObjectClassModel(objectClass);
-			logger.info("The ObjectClass '"+objectClass+" ' has been unsubscribed.");
-		}
-		else{	
-			logger.error("Error during unsubscribe the "+objectClass);
-			throw new UnsubscribeException("Error during unsubscribe the '"+objectClass+"'");
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public void unsubscribeInteractionObject(Class interactionClass) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, 
-																			FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException {
+	public void subscribeInteractionObject(String interactionEndPoint) throws IllegalAccessException, InstantiationException, FederateServiceInvocationsAreBeingReportedViaMOM, InteractionClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, NameNotFound, InvalidInteractionClassHandle {
 
-		if(fedamb.interactionClassModelIsAlreadySubscribed(interactionClass)){
-			fedamb.unsubscribeInteractionClassModel(interactionClass);
-			logger.info("The InteractionClass '"+interactionClass+" ' has been unsubscribed.");
+		// Check if the InteractionObject is already subscribed by the Federate
+		if(!fedamb.objectClassModelIsAlreadySubscribed(interactionEndPoint)){
+			fedamb.subscribeInteractionClassModel(interactionEndPoint, inspector);
+			logger.info("The InteractionClass '"+interactionEndPoint+"' has been subscribed.");
 		}
-		else{	
-			logger.error("Error during unsubscribe the "+interactionClass);
-			throw new UnsubscribeException("Error during unsubscribe the "+interactionClass);
-		}
+		else
+			logger.warn("The InteractionClass '"+interactionEndPoint+"' is already subscribed.");
+
 	}
 
-	protected void createFederationExecution(String federationExecutionName, URL[] fomModules,  TimeType timeType) {
+	public void unsubscribeElementObject(String objectEndPoint) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError {
+
+		// Check if the ElementObject is subscribed by the Federate
+		if(fedamb.objectClassModelIsAlreadySubscribed(objectEndPoint)){
+			fedamb.unsubscribeObjectClassModel(objectEndPoint);
+			logger.info("The ObjectClass '"+objectEndPoint+"' has been unsubscribed.");
+		}
+		else
+			logger.warn("The ObjectClass '"+objectEndPoint+"' is already unsubscribed.");
+	}
+
+	public void unsubscribeInteractionObject(String interactionEndPoint) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, 
+	FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException {
+		
+		// Check if the ElementObject is subscribed by the Federate
+		if(fedamb.interactionClassModelIsAlreadySubscribed(interactionEndPoint)){
+			fedamb.unsubscribeInteractionClassModel(interactionEndPoint);
+			logger.info("The InteractionClass '"+interactionEndPoint+" ' has been unsubscribed.");
+		}
+		else{	
+			logger.error("Error during unsubscribe the "+interactionEndPoint);
+			throw new UnsubscribeException("Error during unsubscribe the "+interactionEndPoint);
+		}
+	}
+
+	protected void createFederationExecution() throws JDOMException, IOException, TimeRepresentationException {
 		try {
-			this.rtiamb.createFederationExecution(federationExecutionName, fomModules, timeType.toString());
+			this.rtiamb.createFederationExecution(federate.getConfig().getFederationName(), inspector.getFOMsURL(), inspector.getTimestampType().toString());
 		} catch (CouldNotCreateLogicalTimeFactory | InconsistentFDD
 				| ErrorReadingFDD | CouldNotOpenFDD
 				| FederationExecutionAlreadyExists | NotConnected
 				| RTIinternalError e) {
-			logger.error("Didn't create federation execution, it already existed");
-			e.printStackTrace();
+			logger.error("Didn't create federation execution, it already existed", e);
 		}
-		
+
 	}
+
+	public void createSimulationTimeRepresentation() throws FederateNotExecutionMember, NotConnected, RTIinternalError, JDOMException, IOException, TimeRepresentationException {
+		this.time = new TimeFactory(inspector.getTimestampType(), federate.getConfig().getSimulationEphoc()).createTimeInstance();
+		this.fedamb.setTime(time);
+	}
+
+	public TimeInterface getSimulationTimestamp() {
+		return this.time;
+	}
+
 }

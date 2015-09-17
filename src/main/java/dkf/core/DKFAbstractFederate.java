@@ -79,10 +79,7 @@ import dkf.exception.UnsubscribeException;
 import dkf.exception.UpdateException;
 import dkf.model.interaction.annotations.InteractionClass;
 import dkf.model.object.annotations.ObjectClass;
-import dkf.time.TimeFactory;
-import dkf.time.TimeInterface;
 import dkf.utility.SystemUtility;
-import dkf.utility.access.FOMDataInspectoryFactory;
 
 
 public abstract class DKFAbstractFederate implements DKFFederateInterface {
@@ -92,8 +89,6 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 	private DKFHLAModule hlamodule= null;
 	private Configuration config = null;
 	private ExecutionThread executionThread = null;
-
-	private TimeInterface time = null;
 
 	public DKFAbstractFederate(DKFAbstractFederateAmbassador seefedamb) {
 		this.hlamodule = new DKFHLAModule(this, seefedamb);
@@ -130,8 +125,7 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 				//create federation execution
 				logger.info("Creating "+ config.getFederationName() +" federation execution ...");
 				try {
-					FOMDataInspectoryFactory inspector = new FOMDataInspectoryFactory(config.getFomDirectory());
-					this.hlamodule.createFederationExecution(config.getFederationName(), inspector.getFOMsURL() , inspector.getTimestamp());
+					this.hlamodule.createFederationExecution();
 				} catch (JDOMException | IOException| TimeRepresentationException e) {
 					e.printStackTrace();
 				}
@@ -139,13 +133,12 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 		}
 
 		try {
-			this.time = new TimeFactory(config).createTimeInstance();
+			this.hlamodule.createSimulationTimeRepresentation();
 		} catch (JDOMException | IOException  e1) {
 			logger.error("Error during the retrieval of the time representation");
 		} catch (TimeRepresentationException e) {
 			logger.error("Error during the retrieval of the time representation. It must be HLAInteger64Time or HLAfloat64Time");
 		}
-		this.hlamodule.setTime(time);
 
 		try {
 			this.hlamodule.configureTimeManager();
@@ -157,7 +150,7 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 			e.printStackTrace();
 		}
 
-		this.executionThread = new ExecutionThread(hlamodule, time);
+		this.executionThread = new ExecutionThread(hlamodule);
 
 	}
 
@@ -176,7 +169,7 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 	}
 
 	public void unsubscribeSubject(Observer observer) {
-		this.hlamodule.unsubscribeFromSubject(observer);
+		this.hlamodule.unsubscribeSubject(observer);
 	}
 
 	protected abstract void doAction();
@@ -188,7 +181,77 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 	public void startExecution() {
 		this.executionThread.start();
 	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean objectClassIsValid(Class objectClass) {
 
+		if(((Class<? extends ObjectClass>)objectClass).getAnnotation(ObjectClass.class) != null &&
+				((Class<? extends ObjectClass>)objectClass).getAnnotation(ObjectClass.class).name() != null)
+			return true;
+		return false;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean interactionClassIsValid(Class interactionClass) {
+		if(((Class<? extends InteractionClass>)interactionClass).getAnnotation(InteractionClass.class) != null &&
+				((Class<? extends InteractionClass>)interactionClass).getAnnotation(InteractionClass.class).name() != null)
+			return true;
+		return false;
+	}
+
+	// ------------------------------------------ ObjectClass -------------------------------------------------------------
+	@SuppressWarnings("rawtypes")
+	public void subscribeElement(Class objectClass) throws InstantiationException, IllegalAccessException, NameNotFound, 
+													FederateNotExecutionMember, NotConnected, RTIinternalError, 
+													InvalidObjectClassHandle, AttributeNotDefined, ObjectClassNotDefined, 
+													SaveInProgress, RestoreInProgress, SubscribeException {
+
+		if(objectClassIsValid(objectClass))
+			this.hlamodule.subscribeElementObject(objectClass);
+		else{
+			logger.error("ObjectClass: '"+ objectClass +"' is not valid!");
+			throw new SubscribeException("ObjectClass: '"+ objectClass +"' is not valid!");
+		}
+	}
+	
+	public void subscribeElement(String objectEndPoint) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidObjectClassHandle, InstantiationException, IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress {
+
+		this.hlamodule.subscribeElementObject(objectEndPoint);
+		
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void unsubscribeElement(Class objectClass) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, 
+	FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException {
+
+		if(objectClassIsValid(objectClass))
+			this.hlamodule.unsubscribeElementObject(((Class<ObjectClass>)objectClass).getAnnotation(ObjectClass.class).name());
+		else{
+			logger.error("ObjectClass: '"+ objectClass +"' is not valid!");
+			throw new UnsubscribeException("ObjectClass: '"+ objectClass +"' is not valid!");
+		}
+
+	}
+	
+	public void unsubscribeElement(String objectEndPoint) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError {
+		
+		this.hlamodule.unsubscribeElementObject(objectEndPoint);
+		
+	}
+	
+	public void updateElement(Object element) throws FederateNotExecutionMember, NotConnected, AttributeNotOwned, AttributeNotDefined, 
+	ObjectInstanceNotKnown, SaveInProgress, RestoreInProgress, RTIinternalError, UpdateException, 
+	IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, ObjectClassNotPublished, 
+	ObjectClassNotDefined {
+
+		if(objectClassIsValid(element.getClass()))
+			this.hlamodule.updateElementObject(element);
+		else{
+			logger.error("ObjectElement: '"+ element +"' is not valid!");
+			throw new UpdateException("ObjectElement: '"+ element +"' is not valid!");
+		}
+	}
+	
 	public void publishElement(Object element) throws NameNotFound, FederateNotExecutionMember, NotConnected, 
 	RTIinternalError, InvalidObjectClassHandle, AttributeNotDefined, 
 	ObjectClassNotDefined, SaveInProgress, RestoreInProgress, 
@@ -215,61 +278,7 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 
 	}
 
-
-	public void publishInteraction(Object interaction) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, 
-	NotConnected, InvalidInteractionClassHandle, InteractionClassNotDefined, 
-	SaveInProgress, RestoreInProgress, InteractionClassNotPublished, 
-	InteractionParameterNotDefined, PublishException {
-
-		if(interactionClassIsValid(interaction.getClass()))
-			this.hlamodule.publishInteraction(interaction);
-		else{
-			logger.error("Interaction: '"+ interaction +"' is not valid!");
-			throw new PublishException("Interaction: '"+ interaction +"' is not valid!");
-		}
-	}
-
-
-	public void updateElement(Object element) throws FederateNotExecutionMember, NotConnected, AttributeNotOwned, AttributeNotDefined, 
-	ObjectInstanceNotKnown, SaveInProgress, RestoreInProgress, RTIinternalError, UpdateException, 
-	IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, ObjectClassNotPublished, 
-	ObjectClassNotDefined {
-
-		if(objectClassIsValid(element.getClass()))
-			this.hlamodule.updateElementObject(element);
-		else{
-			logger.error("ObjectElement: '"+ element +"' is not valid!");
-			throw new UpdateException("ObjectElement: '"+ element +"' is not valid!");
-		}
-	}
-
-	public void updateInteraction(Object interaction) throws InteractionClassNotPublished, InteractionParameterNotDefined, 
-	InteractionClassNotDefined, SaveInProgress, RestoreInProgress, 
-	FederateNotExecutionMember, NotConnected, RTIinternalError, UpdateException {
-
-		if(interactionClassIsValid(interaction.getClass()))
-			this.hlamodule.updateInteraction(interaction);
-		else{
-			logger.error("Interaction: '"+ interaction +"' is not valid!");
-			throw new UpdateException("Interaction: '"+ interaction +"' is not valid!");
-		}
-	}
-
-	@SuppressWarnings("rawtypes")
-	public void subscribeElement(Class objectClass) throws InstantiationException, IllegalAccessException, NameNotFound, 
-	FederateNotExecutionMember, NotConnected, RTIinternalError, 
-	InvalidObjectClassHandle, AttributeNotDefined, ObjectClassNotDefined, 
-	SaveInProgress, RestoreInProgress, SubscribeException {
-
-		if(objectClassIsValid(objectClass))
-			this.hlamodule.subscribeElementObject(objectClass);
-		else{
-			logger.error("ObjectClass: '"+ objectClass +"' is not valid!");
-			throw new SubscribeException("ObjectClass: '"+ objectClass +"' is not valid!");
-		}
-	}
-
-
+	// ------------------------------------------ InteractionClass -------------------------------------------------------------
 	@SuppressWarnings("rawtypes")
 	public void subscribeInteraction(Class interactionClass) throws RTIinternalError, InstantiationException, IllegalAccessException, 
 	NameNotFound, FederateNotExecutionMember, NotConnected, InvalidInteractionClassHandle, 
@@ -284,52 +293,54 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 		}
 
 	}
-
-
-	@SuppressWarnings("rawtypes")
-	public void unsubscribeElement(Class objectClass) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, 
-	FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException {
-
-		if(objectClassIsValid(objectClass))
-			this.hlamodule.unsubscribeObjectClass(objectClass);
-		else{
-			logger.error("ObjectClass: '"+ objectClass +"' is not valid!");
-			throw new UnsubscribeException("ObjectClass: '"+ objectClass +"' is not valid!");
-		}
-
+	
+	public void subscribeInteraction(String objectEndPoint) throws IllegalAccessException, InstantiationException, FederateServiceInvocationsAreBeingReportedViaMOM, InteractionClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, NameNotFound, InvalidInteractionClassHandle {
+		
+		this.hlamodule.subscribeInteractionObject(objectEndPoint);
+		
 	}
 
-	@SuppressWarnings("rawtypes")
-	public void unsubscribeInteraction(Class interactionClass) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, 
+	public void unsubscribeInteraction(String interactionEndPoint) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, 
 	FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException {
+		
+		this.hlamodule.unsubscribeInteractionObject(interactionEndPoint);
+
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void unsubscribeInteraction(Class interactionClass) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException  {
 
 		if(interactionClassIsValid(interactionClass))
-			this.hlamodule.unsubscribeInteractionObject(interactionClass);
+			this.hlamodule.unsubscribeInteractionObject(((Class<InteractionClass>)interactionClass).getAnnotation(InteractionClass.class).name());
 		else{
-			logger.error("Interaction: '"+ interactionClass +"' is not valid!");
-			throw new UnsubscribeException("Interaction: '"+ interactionClass +"' is not valid!");
+			logger.error("InteractionClass: '"+ interactionClass +"' is not valid!");
+			throw new UnsubscribeException("InteractionClass: '"+ interactionClass +"' is not valid!");
+		}
+
+	}
+	
+	public void updateInteraction(Object interaction) throws InteractionClassNotPublished, InteractionParameterNotDefined, 
+	InteractionClassNotDefined, SaveInProgress, RestoreInProgress, 
+	FederateNotExecutionMember, NotConnected, RTIinternalError, UpdateException {
+
+		if(interactionClassIsValid(interaction.getClass()))
+			this.hlamodule.updateInteraction(interaction);
+		else{
+			logger.error("Interaction: '"+ interaction +"' is not valid!");
+			throw new UpdateException("Interaction: '"+ interaction +"' is not valid!");
 		}
 	}
+	
+	public void publishInteraction(Object interaction) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, 
+	NotConnected, InvalidInteractionClassHandle, InteractionClassNotDefined, 
+	SaveInProgress, RestoreInProgress, InteractionClassNotPublished, 
+	InteractionParameterNotDefined, PublishException {
 
-	public TimeInterface getTime() {
-		return time;
+		if(interactionClassIsValid(interaction.getClass()))
+			this.hlamodule.publishInteraction(interaction);
+		else{
+			logger.error("Interaction: '"+ interaction +"' is not valid!");
+			throw new PublishException("Interaction: '"+ interaction +"' is not valid!");
+		}
 	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private boolean objectClassIsValid(Class objectClass) {
-
-		if(((Class<? extends ObjectClass>)objectClass).getAnnotation(ObjectClass.class) != null &&
-				((Class<? extends ObjectClass>)objectClass).getAnnotation(ObjectClass.class).name() != null)
-			return true;
-		return false;
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private boolean interactionClassIsValid(Class interactionClass) {
-		if(((Class<? extends InteractionClass>)interactionClass).getAnnotation(InteractionClass.class) != null &&
-				((Class<? extends InteractionClass>)interactionClass).getAnnotation(InteractionClass.class).name() != null)
-			return true;
-		return false;
-	}
-
 }

@@ -1,4 +1,4 @@
-package dkf.utility.access;
+package dkf.utility.dataType;
 
 public enum TimeType {
 	

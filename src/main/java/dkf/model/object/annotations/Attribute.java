@@ -52,19 +52,19 @@ public @interface Attribute {
 	 * The Sharing type of the attribute defined in the FOM file
 	 * @return The type of the Sharing
 	 */
-	public Sharing sharing() default Sharing.UNKNOWN;
+	public Sharing sharing() default Sharing.Unknown;
 	
 	/**
 	 * The Ownership type of the attribute defined in the FOM file
 	 * @return The type of ownership
 	 */
-	public Ownership Ownership() default Ownership.UNKNOWN;
+	public Ownership Ownership() default Ownership.Unknown;
 	
 	/**
 	 * The UpdateType of the attribute defined in the FOM file
 	 * @return The type of Update
 	 */
-	public UpdateType updateType() default UpdateType.UNKNOWN;
+	public UpdateType updateType() default UpdateType.Unknown;
 	
 	/**
 	 * The update condition of the attribute
@@ -76,13 +76,13 @@ public @interface Attribute {
 	 * The Order type of the attribute defined in the FOM file
 	 * @return The type of the Sharing
 	 */
-	public Order order() default Order.UNKNOWN;
+	public Order order() default Order.Unknown;
 	
 	/**
 	 * The transportation type of the attribute defined in the FOM file
 	 * @return The transportation type of the attribute
 	 */
-	public Transportation transportation() default Transportation.UNKNOWN;
+	public Transportation transportation() default Transportation.Unknown;
 	
 	/**
 	 * The semantic of the parameter defined in the FOM file

@@ -42,7 +42,7 @@ public @interface ObjectClass {
 	 * The Sharing type of the ObjectClass defined in the FOM file
 	 * @return The type of the Sharing
 	 */
-	public Sharing sharing() default Sharing.UNKNOWN;
+	public Sharing sharing() default Sharing.Unknown;
 	
 	/**
 	 * The semantic of the ObjectClass defined in the FOM file

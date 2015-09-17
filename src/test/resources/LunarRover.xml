@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel
+	xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd"
+	xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelIdentification>
+		<name>New Module</name>
+		<type>FOM</type>
+		<version>1.0</version>
+		<securityClassification>unclassified</securityClassification>
+		<purpose></purpose>
+		<applicationDomain></applicationDomain>
+		<description>Description of MyModule</description>
+		<useLimitation></useLimitation>
+		<other></other>
+	</modelIdentification>
+	<objects>
+		<objectClass>
+			<name>HLAobjectRoot</name>
+			<objectClass>
+				<name>LunarRover</name>
+				<sharing>PublishSubscribe</sharing>
+				<semantics></semantics>
+				<attribute>
+					<name>name</name>
+					<dataType>HLAunicodeString</dataType>
+					<updateType>Static</updateType>
+					<updateCondition>At initialization</updateCondition>
+					<ownership>NoTransfer</ownership>
+					<sharing>PublishSubscribe</sharing>
+					<transportation>HLAreliable</transportation>
+					<order>TimeStamp</order>
+					<semantics>A unique name for this reference frame instance. Reference frame names are essential in forming 'links' between parent/child reference frames.</semantics>
+				</attribute>
+				<attribute>
+					<name>parent_name</name>
+					<dataType>HLAunicodeString</dataType>
+					<updateType>Static</updateType>
+					<updateCondition>At initialization</updateCondition>
+					<ownership>NoTransfer</ownership>
+					<sharing>PublishSubscribe</sharing>
+					<transportation>HLAreliable</transportation>
+					<order>TimeStamp</order>
+					<semantics>The name of this frame's parent reference frame. If this frame has no parent  (i.e., is a 'root' reference frame), then this string must be empty, otherwise the  non-empty string must correspond to the name attribute of some other ReferenceFrame  object instance in the simulation.</semantics>
+				</attribute>
+			</objectClass>
+		</objectClass>
+	</objects>
+	<dataTypes>
+		<simpleDataTypes />
+		<enumeratedDataTypes />
+		<arrayDataTypes />
+		<fixedRecordDataTypes />
+		<variantRecordDataTypes />
+	</dataTypes>
+	<notes />
+</objectModel>

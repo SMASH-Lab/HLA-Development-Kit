@@ -41,11 +41,16 @@ import hla.rti1516e.exceptions.RTIinternalError;
 import hla.rti1516e.exceptions.RestoreInProgress;
 import hla.rti1516e.exceptions.SaveInProgress;
 
+import org.apache.commons.beanutils.LazyDynaClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dkf.core.DKFRTIAmbassador;
+import dkf.model.interaction.parser.AbstractInteractionParser;
+import dkf.model.interaction.parser.DynaBeanInteractionParser;
+import dkf.model.interaction.parser.InteractionClassParser;
 import dkf.model.object.ObjectModelStatus;
+import dkf.utility.access.FOMDataInspector;
 
 public class InteractionClassModel {
 
@@ -59,15 +64,34 @@ public class InteractionClassModel {
 	private RTIambassador rti_ambassador = null;
 
 	private InteractionClassEntity interactionEntity = null;
-	private InteractionClassModelParser parser = null;
+	private AbstractInteractionParser parser = null;
 
 	private ParameterHandleValueMap parameter_values = null;
 
+	private boolean isDynaClass;
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public InteractionClassModel(Class interactionClass) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidInteractionClassHandle {
+		
+		this.parser = new InteractionClassParser(interactionClass);
+		this.isDynaClass = false;
+		createResources();
+	}
+
+	public InteractionClassModel(LazyDynaClass dynaClass, FOMDataInspector inspector) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidInteractionClassHandle {
+		this.parser = new DynaBeanInteractionParser(dynaClass, inspector);
+		this.isDynaClass  = true;
+		createResources();
+	}
+	
+	private void createResources() throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidInteractionClassHandle{
 		this.rti_ambassador = DKFRTIAmbassador.getInstance();
-		this.parser = new InteractionClassModelParser(interactionClass);
 		initialize();
+	}
+	
+	public boolean isDanyClass() {
+		return this.isDynaClass;
+				
 	}
 
 	private void initialize() throws NameNotFound, FederateNotExecutionMember, NotConnected, RTIinternalError, InvalidInteractionClassHandle {
@@ -80,7 +104,7 @@ public class InteractionClassModel {
 
 			// Get handles to all the attributes.
 			ParameterHandle tmp = null;
-			for(String str : parser.getMapFieldCoder().keySet()){
+			for(String str : parser.getFieldCoderMap().keySet()){
 				tmp = rti_ambassador.getParameterHandle(interactionClassHandle, str);
 				mapFieldNameParameterHandle.put(str, tmp);
 			}

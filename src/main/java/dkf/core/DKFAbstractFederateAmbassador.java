@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dkf.core.observer.Subject;
+import dkf.exception.NoResultException;
 import dkf.exception.UpdateException;
 import dkf.model.interaction.InteractionClassModel;
 import dkf.model.interaction.InteractionClassModelManager;
@@ -37,6 +38,7 @@ import dkf.model.object.ObjectClassModel;
 import dkf.model.object.ObjectClassModelManager;
 import dkf.model.object.annotations.ObjectClass;
 import dkf.time.TimeInterface;
+import dkf.utility.access.FOMDataInspector;
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.FederateHandle;
 import hla.rti1516e.InteractionClassHandle;
@@ -93,7 +95,7 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 		this.interactionManager = new InteractionClassModelManager();
 
 	}
-
+	
 	protected void setTime(TimeInterface time) {
 		this.time  = time;
 	}
@@ -154,7 +156,7 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 
 		if(objectManager.objectClassIsSubscribed(arg1))
 			objectManager.addDiscoverObjectInstance(arg0, arg1, arg2);
-
+		
 	}
 
 	@Override
@@ -200,8 +202,7 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 				if(ris != null)
 					this.subject.notifyUpdate(ris);
 			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-				logger.error("Error during the decoding operation of the Object with ObjectInstanceHandle="+arg0);
+				logger.error("Error during the decoding operation of the Object with ObjectInstanceHandle="+arg0, e);
 			}
 		}
 
@@ -293,9 +294,10 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 
 		if (oce != null)
 			oce.setStatus(NameReservationStatus.SUCCEDED);
-		else 
+		else {
 			logger.error("ElementObject "+instance_name+" not found!");
-
+			throw new NoResultException("ElementObject "+instance_name+" not found!");
+		}
 	}
 
 
@@ -306,15 +308,21 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 
 		if (oce != null)
 			oce.setStatus(NameReservationStatus.FAILED);
-		else 
+		else {
 			logger.error("ElementObject "+instance_name+" not found!");
+			throw new NoResultException("ElementObject "+instance_name+" not found!");
+		}
 
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public boolean objectClassModelIsAlreadySubscribed(Class objectClass) {
-		if(((Class<ObjectClass>)objectClass).getAnnotation(ObjectClass.class) != null &&
-				objectManager.getSubscribedMap().containsKey(((Class<ObjectClass>)objectClass).getAnnotation(ObjectClass.class).name()))
+	public boolean objectClassModelIsAlreadySubscribed(String objectEndPoint) {
+		if(objectManager.getSubscribedMap().containsKey(objectEndPoint))
+			return true;
+		return false;
+	}
+	
+	public boolean interactionClassModelIsAlreadySubscribed(String interactionEndPoint) {
+		if(interactionManager.getSubscribedMap().containsKey(interactionEndPoint))
 			return true;
 		return false;
 	}
@@ -327,13 +335,23 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 		objectManager.subscribe(objectClass);
 
 	}
+	
+	public void subscribeObjectClassModel(String objectEndPoint, FOMDataInspector inspector) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidObjectClassHandle, InstantiationException, IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress {
+		
+		objectManager.subscribe(objectEndPoint, inspector);
+		
+	}
+	
+	public void subscribeInteractionClassModel(String interactionEndPoint, FOMDataInspector inspector) throws IllegalAccessException, InstantiationException, FederateServiceInvocationsAreBeingReportedViaMOM, InteractionClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, NameNotFound, InvalidInteractionClassHandle {
+		
+		interactionManager.subscribe(interactionEndPoint, inspector);
+		
+	}
 
-	@SuppressWarnings("rawtypes")
-	public void unsubscribeObjectClassModel(Class objectClass) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, 
-	NotConnected, RTIinternalError {
+	public void unsubscribeObjectClassModel(String objectEndPoint) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError {
 
-		objectManager.unsubscribe(objectClass);
-
+		objectManager.unsubscribe(objectEndPoint);
+		
 	}
 
 	public boolean objectClassEntityIsAlreadyPublished(Object element) {
@@ -347,7 +365,7 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 		}
 		return false;
 	}
-
+	
 	public void publishObjectClassEntity(Object element, String name) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidObjectClassHandle, InstantiationException, IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, ObjectClassNotPublished, AttributeNotOwned, ObjectInstanceNotKnown, UpdateException {
 		objectManager.publish(element, name);
 
@@ -388,23 +406,13 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 		icm.updatePublishedInteraction();
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public boolean interactionClassModelIsAlreadySubscribed(Class interactionClass) {
-
-		if(((Class<InteractionClass>)interactionClass).getAnnotation(InteractionClass.class) != null &&
-				interactionManager.getSubscribedMap().containsKey(((Class<InteractionClass>)interactionClass).getAnnotation(InteractionClass.class).name()))
-			return true;
-		return false;
-
-	}
-
 	@SuppressWarnings("rawtypes")
 	public void subscribeInteractionClassModel(Class interactionClass) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, NotConnected, InvalidInteractionClassHandle, FederateServiceInvocationsAreBeingReportedViaMOM, InteractionClassNotDefined, SaveInProgress, RestoreInProgress, InstantiationException, IllegalAccessException {
 		interactionManager.subscribe(interactionClass);
 	}
 
-	@SuppressWarnings("rawtypes")
-	public void unsubscribeInteractionClassModel(Class interactionClass) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError {
-		interactionManager.unsubscribe(interactionClass);
+	public void unsubscribeInteractionClassModel(String interactionEndPoint) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError {
+		interactionManager.unsubscribe(interactionEndPoint);
 	}
+
 }
