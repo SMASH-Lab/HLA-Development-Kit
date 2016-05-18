@@ -18,7 +18,7 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library. 
 If not, see http://http://www.gnu.org/licenses/
-*****************************************************************/
+ *****************************************************************/
 package dkf.core;
 
 import java.net.URL;
@@ -116,7 +116,7 @@ public class DKFHLAModule {
 	}
 
 	protected void connect(String local_settings_designator) throws RTIinternalError, ConnectionFailed, 
-															 InvalidLocalSettingsDesignator, UnsupportedCallbackModel, CallNotAllowedFromWithinCallback {
+	InvalidLocalSettingsDesignator, UnsupportedCallbackModel, CallNotAllowedFromWithinCallback {
 
 		logger.info("Connecting to HLA/RTI.");
 		// Create the RTIambassador and Connect
@@ -132,14 +132,14 @@ public class DKFHLAModule {
 	}
 
 	protected void joinFederationExecution() throws InconsistentFDD, ErrorReadingFDD, CouldNotOpenFDD, NotConnected, 
-												RTIinternalError, CouldNotCreateLogicalTimeFactory, SaveInProgress, RestoreInProgress, CallNotAllowedFromWithinCallback, FederationExecutionDoesNotExist {
+	RTIinternalError, CouldNotCreateLogicalTimeFactory, SaveInProgress, RestoreInProgress, CallNotAllowedFromWithinCallback, FederationExecutionDoesNotExist {
 
 		Configuration config = federate.getConfig();
-		
+
 		logger.info("Loading FOMs modules...");
 		FOMDataInspectoryFactory fdi = new FOMDataInspectoryFactory(config.getFomDirectory());
 		URL foms[] = fdi.getFOMsURL();
-		
+
 		//join the federate into the Federation execution
 		logger.info("Join the federate '"+config.getFederateName()+"' in the Federation execution '"+config.getFederationName()+"'");
 		try {
@@ -177,7 +177,7 @@ public class DKFHLAModule {
 
 		// Make the local logical time object.
 		time.initializeLogicalTime();
-		
+
 		// Make the local logical time interval.
 		time.initializeLookaheadInterval();
 
@@ -284,7 +284,7 @@ public class DKFHLAModule {
 		// Clean up connectivity to Federation Execution.
 		rtiamb.resignFederationExecution(ResignAction.DELETE_OBJECTS_THEN_DIVEST);
 		logger.debug("Resign from the federation execution");
-		
+
 		//Try to destroy the federation execution
 		try {
 			rtiamb.destroyFederationExecution(federate.getConfig().getFederationName());
@@ -294,7 +294,7 @@ public class DKFHLAModule {
 		} catch (FederatesCurrentlyJoined e) {
 			logger.debug("Didn't destroi the federatione execution '"+federate.getConfig().getFederationName()+"', federates still joined");
 		}
-		
+
 		// Disconnect from the RTI.
 		rtiamb.disconnect();
 		logger.info("The federate has been disconnected from the federation execution.");
@@ -316,13 +316,15 @@ public class DKFHLAModule {
 	FederateNotExecutionMember, NotConnected, RTIinternalError, IllegalTimeArithmetic {
 
 		fedamb.setAdvancing(false);
-		try {
-			rtiamb.timeAdvanceRequest(time.nextTimeStep());
-		} catch (InvalidLogicalTimeInterval e) {
-			logger.error("Invalid LogicalTimeInterval.");
-			e.printStackTrace();
-		}
 
+		if(rtiamb != null){
+			try {
+				rtiamb.timeAdvanceRequest(time.nextTimeStep());
+			} catch (InvalidLogicalTimeInterval e) {
+				logger.error("Invalid LogicalTimeInterval.");
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void subscribeToSubject(Observer observer) {
@@ -337,10 +339,10 @@ public class DKFHLAModule {
 
 
 	public void publishElement(Object element, String name) throws NameNotFound, FederateNotExecutionMember, NotConnected, 
-															RTIinternalError, InvalidObjectClassHandle, PublishException, InstantiationException, 
-															IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, 
-															RestoreInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, 
-															ObjectClassNotPublished, AttributeNotOwned, ObjectInstanceNotKnown, UpdateException  {
+	RTIinternalError, InvalidObjectClassHandle, PublishException, InstantiationException, 
+	IllegalAccessException, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, 
+	RestoreInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, 
+	ObjectClassNotPublished, AttributeNotOwned, ObjectInstanceNotKnown, UpdateException  {
 
 		if(!fedamb.objectClassEntityIsAlreadyPublished(element)){
 			fedamb.publishObjectClassEntity(element, name);
@@ -366,8 +368,8 @@ public class DKFHLAModule {
 	}
 
 	public void updateElementObject(Object element) throws UpdateException, FederateNotExecutionMember, NotConnected, AttributeNotOwned, 
-															AttributeNotDefined, ObjectInstanceNotKnown, SaveInProgress, RestoreInProgress, RTIinternalError, 
-															IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, ObjectClassNotPublished, ObjectClassNotDefined {
+	AttributeNotDefined, ObjectInstanceNotKnown, SaveInProgress, RestoreInProgress, RTIinternalError, 
+	IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, ObjectClassNotPublished, ObjectClassNotDefined {
 
 		if(fedamb.objectClassEntityIsAlreadyPublished(element)){
 			fedamb.updateObjectClassEntityOnRTI(element);
@@ -380,8 +382,8 @@ public class DKFHLAModule {
 	}
 
 	public void updateInteraction(Object interaction) throws InteractionClassNotPublished, InteractionParameterNotDefined, InteractionClassNotDefined, 
-															SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, 
-															UpdateException {
+	SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError, 
+	UpdateException {
 
 
 		if(fedamb.interactionClassEntityIsAlreadyPublished(interaction)){
@@ -394,10 +396,10 @@ public class DKFHLAModule {
 		}
 
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public void subscribeElementObject(Class objectClass) throws InstantiationException, IllegalAccessException, NameNotFound, FederateNotExecutionMember, NotConnected, 
-															RTIinternalError, InvalidObjectClassHandle, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress {
+	RTIinternalError, InvalidObjectClassHandle, AttributeNotDefined, ObjectClassNotDefined, SaveInProgress, RestoreInProgress {
 
 		if(!fedamb.objectClassModelIsAlreadySubscribed(objectClass)){
 			fedamb.subscribeObjectClassModel(objectClass);
@@ -409,9 +411,9 @@ public class DKFHLAModule {
 
 	@SuppressWarnings("rawtypes")
 	public void subscribeInteractionObject(Class interactionClass) throws RTIinternalError, NameNotFound, FederateNotExecutionMember, 
-																		NotConnected, InvalidInteractionClassHandle, FederateServiceInvocationsAreBeingReportedViaMOM, 
-																		InteractionClassNotDefined, SaveInProgress, RestoreInProgress, InstantiationException, 
-																		IllegalAccessException  {
+	NotConnected, InvalidInteractionClassHandle, FederateServiceInvocationsAreBeingReportedViaMOM, 
+	InteractionClassNotDefined, SaveInProgress, RestoreInProgress, InstantiationException, 
+	IllegalAccessException  {
 
 		if(!fedamb.interactionClassModelIsAlreadySubscribed(interactionClass)){
 			fedamb.subscribeInteractionClassModel(interactionClass);
@@ -420,10 +422,10 @@ public class DKFHLAModule {
 		else
 			logger.warn("The InteractionClass '"+interactionClass+"' is already subscribed.");
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public void unsubscribeObjectClass(Class objectClass) throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, 
-															NotConnected, RTIinternalError, UnsubscribeException {
+	NotConnected, RTIinternalError, UnsubscribeException {
 
 		if(fedamb.objectClassModelIsAlreadySubscribed(objectClass)){
 			fedamb.unsubscribeObjectClassModel(objectClass);
@@ -434,10 +436,10 @@ public class DKFHLAModule {
 			throw new UnsubscribeException("Error during unsubscribe the '"+objectClass+"'");
 		}
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public void unsubscribeInteractionObject(Class interactionClass) throws InteractionClassNotDefined, SaveInProgress, RestoreInProgress, 
-																			FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException {
+	FederateNotExecutionMember, NotConnected, RTIinternalError, UnsubscribeException {
 
 		if(fedamb.interactionClassModelIsAlreadySubscribed(interactionClass)){
 			fedamb.unsubscribeInteractionClassModel(interactionClass);
@@ -459,6 +461,6 @@ public class DKFHLAModule {
 			logger.error("Didn't create federation execution, it already existed");
 			e.printStackTrace();
 		}
-		
+
 	}
 }

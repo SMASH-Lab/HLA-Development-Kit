@@ -21,7 +21,6 @@ If not, see http://http://www.gnu.org/licenses/
 *****************************************************************/
 package dkf.utility;
 
-
 public class TimeUtility {
 	
 	private static final TimeUnit[] units = new TimeUnit[] {
@@ -73,5 +72,5 @@ public class TimeUtility {
 				return i;
 		return -1;
 	}
-
+	
 }

@@ -93,10 +93,5 @@ public class ExecutionThread implements Runnable {
 
 	protected void shutdown() {
 		this.CONTINUE_EXECUTION.set(false);
-		try {
-			runningThread.join();
-		} catch (InterruptedException e1) { 
-			//ignored 
-		}
 	}
 }
