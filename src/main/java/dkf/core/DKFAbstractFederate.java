@@ -91,7 +91,9 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 
 	private DKFHLAModule hlamodule= null;
 	private Configuration config = null;
-	private ExecutionThread executionThread = null;
+
+	private Thread runningThread = null;
+	private ExecutionTask executionTask = null;
 
 	private TimeInterface time = null;
 
@@ -119,7 +121,7 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 			logger.error("Windows Firewall is enabled. Please disable it before you ran your SEEFederate.");
 			throw new FirewallExeption("Windows Firewall is enabled. Please disable it before you ran your SEEFederate.");
 		}
-
+		
 		boolean joined = false;
 		while(!joined){
 			try {
@@ -157,7 +159,7 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 			e.printStackTrace();
 		}
 
-		this.executionThread = new ExecutionThread(hlamodule, time);
+		this.executionTask = new ExecutionTask(hlamodule, time);
 
 	}
 
@@ -166,8 +168,15 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 	RTIinternalError, FederateIsExecutionMember, CallNotAllowedFromWithinCallback, 
 	SaveInProgress, RestoreInProgress {
 
-		this.executionThread.shutdown();
-		this.hlamodule.disconnect();
+
+		try {
+			this.executionTask.shutdown();
+			this.runningThread.join(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}finally{
+			this.hlamodule.disconnect();
+		}
 
 	}
 
@@ -186,7 +195,8 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 	}
 
 	public void startExecution() {
-		this.executionThread.start();
+		this.runningThread = new Thread(executionTask);
+		this.runningThread.start();
 	}
 
 	public void publishElement(Object element) throws NameNotFound, FederateNotExecutionMember, NotConnected, 
@@ -268,8 +278,7 @@ public abstract class DKFAbstractFederate implements DKFFederateInterface {
 			throw new SubscribeException("ObjectClass: '"+ objectClass +"' is not valid!");
 		}
 	}
-
-
+	
 	@SuppressWarnings("rawtypes")
 	public void subscribeInteraction(Class interactionClass) throws RTIinternalError, InstantiationException, IllegalAccessException, 
 	NameNotFound, FederateNotExecutionMember, NotConnected, InvalidInteractionClassHandle, 

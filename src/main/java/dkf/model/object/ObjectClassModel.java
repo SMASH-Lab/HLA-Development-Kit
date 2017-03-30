@@ -111,7 +111,8 @@ public class ObjectClassModel {
 		if(status == ObjectModelStatus.INITIALIZED){
 
 			AttributeHandleSet attributeSet = rti_ambassador.getAttributeHandleSetFactory().create();
-			attributeSet.addAll(mapFieldNameAttributeHandle.values());
+			for(AttributeHandle val : mapFieldNameAttributeHandle.values())
+				attributeSet.add(val);
 
 			rti_ambassador.subscribeObjectClassAttributes(objectClassHandle, attributeSet);
 			status = ObjectModelStatus.SUBSCRIBED;
@@ -127,7 +128,6 @@ public class ObjectClassModel {
 	public void unsubscribe() throws ObjectClassNotDefined, SaveInProgress, RestoreInProgress, FederateNotExecutionMember, NotConnected, RTIinternalError {
 
 		if(status == ObjectModelStatus.SUBSCRIBED){
-
 			rti_ambassador.unsubscribeObjectClass(this.objectClassHandle);
 			status = ObjectModelStatus.UNKNOWN;
 		}

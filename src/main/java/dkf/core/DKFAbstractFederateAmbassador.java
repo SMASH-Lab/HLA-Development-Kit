@@ -192,7 +192,7 @@ public abstract class DKFAbstractFederateAmbassador extends NullFederateAmbassad
 			TransportationTypeHandle arg4, LogicalTime arg5, OrderType arg6,
 			MessageRetractionHandle arg7, SupplementalReflectInfo arg8) throws FederateInternalError {
 
-		logger.trace("ObjectInstanceHandle "+ arg0+",AttributeHandleValueMap "+ arg1+",byte[] "+ arg2+",OrderType "+arg3+", TransportationTypeHandle"+arg4+",LogicalTime"+ arg5+",OrderType"+arg6+"MessageRetractionHandle"+arg7+" ,SupplementalReflectInfo"+arg8);
+		logger.trace("ObjectInstanceHandle: "+ arg0+", AttributeHandleValueMap: "+ arg1+", byte[]: "+ arg2+", OrderType: "+arg3+", TransportationTypeHandle: "+arg4+", LogicalTime: "+ arg5+", OrderType: "+arg6+"MessageRetractionHandle: "+arg7+", SupplementalReflectInfo: "+arg8);
 
 		if(objectManager.objectInstanceHandleIsSubscribed(arg0)){
 			try {

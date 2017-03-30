@@ -174,7 +174,7 @@ public class DKFHLAModule {
 			logger.info("Asynchronous delivery enabled.");
 			rtiamb.enableAsynchronousDelivery();
 		}
-
+		
 		// Make the local logical time object.
 		time.initializeLogicalTime();
 
@@ -284,15 +284,15 @@ public class DKFHLAModule {
 		// Clean up connectivity to Federation Execution.
 		rtiamb.resignFederationExecution(ResignAction.DELETE_OBJECTS_THEN_DIVEST);
 		logger.debug("Resign from the federation execution");
-
+		
 		//Try to destroy the federation execution
 		try {
 			rtiamb.destroyFederationExecution(federate.getConfig().getFederationName());
-			logger.error("Federatione execution '"+federate.getConfig().getFederationName()+"' has been destroyed");
+			logger.info("Federation execution '"+federate.getConfig().getFederationName()+"' has been destroyed");
 		} catch (FederationExecutionDoesNotExist e) {
-			logger.error("Federatione execution '"+federate.getConfig().getFederationName()+"' doesn't exist");
+			logger.info("Federation execution '"+federate.getConfig().getFederationName()+"' doesn't exist");
 		} catch (FederatesCurrentlyJoined e) {
-			logger.debug("Didn't destroi the federatione execution '"+federate.getConfig().getFederationName()+"', federates still joined");
+			logger.info("Didn't destroy the federation execution '"+federate.getConfig().getFederationName()+"', federates still joined");
 		}
 
 		// Disconnect from the RTI.
@@ -463,4 +463,5 @@ public class DKFHLAModule {
 		}
 
 	}
+
 }

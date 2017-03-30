@@ -26,9 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import dkf.time.TimeInterface;
 import hla.rti1516e.exceptions.RTIexception;
 
-public class ExecutionThread implements Runnable {
-
-	private Thread runningThread = null;
+public class ExecutionTask implements Runnable {
 
 	private DKFAbstractFederate federate = null;
 	private DKFAbstractFederateAmbassador fedamb = null;
@@ -41,12 +39,11 @@ public class ExecutionThread implements Runnable {
 	// Simulation time parameters.
 	private TimeInterface time = null;
 
-	protected ExecutionThread(DKFHLAModule hlamodule, TimeInterface time) {
+	protected ExecutionTask(DKFHLAModule hlamodule, TimeInterface time) {
 		this.hlamodule = hlamodule;
 		this.federate = hlamodule.getFederate();
 		this.fedamb = hlamodule.getAmbassador();
 		this.time = time;
-		this.runningThread = new Thread(this);
 		this.CONTINUE_EXECUTION = new AtomicBoolean(true);
 	}
 
@@ -84,11 +81,6 @@ public class ExecutionThread implements Runnable {
 			exec_loop_counter++;
 		}
 
-	}
-
-	protected void start(){
-		if(!runningThread.isAlive())
-			runningThread.start();
 	}
 
 	protected void shutdown() {
