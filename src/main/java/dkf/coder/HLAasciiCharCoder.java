@@ -36,7 +36,7 @@ public class HLAasciiCharCoder implements Coder<Byte> {
 		this.factory = RtiFactoryFactory.getRtiFactory().getEncoderFactory();
 		this.coder = factory.createHLAASCIIchar();
 	}
-
+	
 	public Byte decode(byte[] code) throws DecoderException {
 		coder.decode(code);
 		return coder.getValue();
